@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import {
-  Activity, ArrowRight, Bell, Bot, BriefcaseBusiness,
-  CalendarDays, CheckCircle2, ChevronRight, CircleDollarSign,
-  Command, FileSearch, Gauge, Globe2, LayoutDashboard, Menu,
-  MoreHorizontal, Plus, Search, Send,
-  Settings, Sparkles, Target, TrendingUp, Users, Workflow, X,
+  Activity, ArrowRight, BriefcaseBusiness,
+  CheckCircle2, ChevronRight,
+  FileSearch, Gauge, Globe2, LayoutDashboard, Menu,
+  MoreHorizontal, Search,
+  Settings, ShieldCheck, Sparkles, Target, TrendingUp, Users, Workflow, X,
   Factory, HeartPulse, GraduationCap, Building2, ShoppingBag, Rocket,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
@@ -84,18 +83,18 @@ const transformationTemplates: Partial<Record<IndustryId, TransformationTemplate
     ],
   },
   healthcare: {
-    currentState:"A trusted healthcare practice providing valuable care, but growth is limited by poor local visibility, appointment management issues, weak patient retention, and inconsistent review management.",
-    futureState:"A visible and trusted healthcare practice with an organized patient journey, reliable appointments, stronger retention, and an active reputation.",
-    constraint:"Patient journey management",
-    opportunities:[{title:"Improve local discovery",impact:"Help more nearby patients find and trust the practice."},{title:"Create a reliable appointment journey",impact:"Reduce missed appointments and administrative friction."},{title:"Strengthen patient trust after care",impact:"Improve retention, reviews, and long-term relationships."}],
+    currentState:"Patients trust the care, but finding the practice, booking appointments, and staying connected can be easier.",
+    futureState:"A trusted and organized practice where patients can easily find, book, and return.",
+    constraint:"Making the patient journey simple and consistent",
+    opportunities:[{title:"Help more patients find the practice",impact:"Improve local visibility and trust."},{title:"Make appointments easier",impact:"Reduce missed bookings and staff coordination."},{title:"Stay connected after each visit",impact:"Improve patient retention and reviews."}],
     blueprint:[
-      {stage:"Current State",situation:"Strong care quality, but visibility and patient coordination are inconsistent.",outcome:"A clear view of patient journey gaps and growth opportunities.",systems:["Practice assessment","Patient journey map"],impact:"Clear priorities for sustainable practice growth."},
-      {stage:"Foundation",situation:"The practice experience and value are not communicated consistently.",outcome:"A professional, reassuring, and trusted healthcare brand.",systems:["Practice brand foundation","Patient communication standards"],impact:"Greater patient confidence."},
-      {stage:"Visibility",situation:"Local patients struggle to discover and evaluate the practice.",outcome:"Strong local visibility and an active, trusted reputation.",systems:["Local visibility","Review management"],impact:"More relevant patient inquiries."},
-      {stage:"Lead Generation",situation:"Patient inquiries and appointment requests are inconsistently managed.",outcome:"A clear journey from inquiry to confirmed appointment.",systems:["Patient inquiry capture","Appointment coordination"],impact:"More bookings and fewer lost inquiries."},
-      {stage:"Operations",situation:"Appointment and follow-up processes create administrative pressure.",outcome:"An organized and consistent patient experience.",systems:["Appointment management","Patient follow-up"],impact:"Fewer missed appointments and better retention."},
-      {stage:"Automation",situation:"Reminders, reviews, and follow-ups require repeated manual effort.",outcome:"Routine patient communication happens reliably.",systems:["Reminder automation","Review request automation"],impact:"Lower workload and stronger engagement."},
-      {stage:"Scale Ready",situation:"Practice growth increases coordination complexity.",outcome:"A measurable patient experience ready for additional capacity.",systems:["Practice intelligence","Retention system"],impact:"Sustainable growth without compromising care."},
+      {stage:"Understand",situation:"We first understand how patients currently find, book, and interact with the practice.",outcome:"Everyone agrees on the biggest patient journey gaps.",systems:["Practice review","Patient journey"],impact:"Clear priorities for improvement."},
+      {stage:"Build Trust",situation:"The practice may be excellent, but its value is not always clearly communicated.",outcome:"Patients quickly understand why they can trust the practice.",systems:["Clear practice message","Patient communication"],impact:"Greater patient confidence."},
+      {stage:"Become Visible",situation:"Nearby patients may not easily find or evaluate the practice.",outcome:"More local patients can discover and trust the practice.",systems:["Local visibility","Patient reviews"],impact:"More relevant patient inquiries."},
+      {stage:"Improve Booking",situation:"Inquiries and appointment requests can be missed or delayed.",outcome:"Every patient receives a clear path to a confirmed appointment.",systems:["Inquiry tracking","Appointment process"],impact:"More bookings and fewer lost inquiries."},
+      {stage:"Improve Experience",situation:"Booking, reminders, and follow-up take too much staff effort.",outcome:"Patients receive a smooth and consistent experience.",systems:["Appointment management","Patient follow-up"],impact:"Fewer missed appointments and better retention."},
+      {stage:"Automate Routine Work",situation:"Staff repeatedly send reminders, follow-ups, and review requests.",outcome:"Routine communication happens automatically and reliably.",systems:["Automatic reminders","Review requests"],impact:"Less staff workload and better engagement."},
+      {stage:"Grow Confidently",situation:"Serving more patients can make coordination harder.",outcome:"The practice can grow without reducing care quality.",systems:["Performance visibility","Patient retention"],impact:"Sustainable practice growth."},
     ],
     systems:[
       {name:"Local Healthcare Visibility System",problem:"Nearby patients cannot easily discover or evaluate the practice.",impact:"Builds trusted local visibility where patient decisions begin.",benefits:["More local discovery","Stronger trust","Relevant inquiries"],complexity:"Moderate",timeline:"4–6 weeks"},
@@ -116,23 +115,60 @@ const industryProfiles: IndustryProfile[] = [
   { id:"startup", label:"Startup", icon:Rocket, challenge:"Unclear positioning and growth systems that are not yet repeatable.", opportunity:"Turn early traction into a focused, scalable growth model.", workflows:["Market learning","Lead qualification","Founder reporting"], recommendations:[{title:"Clarify the strongest growth signal",detail:"Focus the team on the market response that matters most.",tag:"High impact"},{title:"Automate lead learning and qualification",detail:"Capture insight from every sales conversation.",tag:"Quick win"},{title:"Build a weekly founder intelligence brief",detail:"Turn activity into clearer strategic decisions.",tag:"Build system"}], activity:["Market signal diagnostic completed","Lead learning workflow deployed","Founder intelligence milestone approved"] },
 ];
 
+const indianBusinessQuestions: Record<IndustryId, { title: string; impact: string }[]> = {
+  manufacturing: [
+    { title:"Are good inquiries getting lost between calls, WhatsApp, and salespeople?",impact:"A shared inquiry view can improve follow-up and reduce owner dependency." },
+    { title:"Can quotations be prepared and followed up faster?",impact:"Faster response can help the business compete without reducing price." },
+    { title:"Can dealers and existing buyers generate more repeat business?",impact:"A simple follow-up rhythm can strengthen orders beyond new lead generation." },
+  ],
+  healthcare: [
+    { title:"Can nearby patients find and trust the practice easily?",impact:"Better local visibility and reviews can increase relevant patient inquiries." },
+    { title:"Are appointment requests, reminders, and follow-ups consistent?",impact:"A simpler patient journey can reduce missed bookings and staff workload." },
+    { title:"Are satisfied patients encouraged to return and recommend the practice?",impact:"Thoughtful follow-up can improve retention and reputation." },
+  ],
+  education: [
+    { title:"Are admission inquiries followed up until parents or learners decide?",impact:"A clear follow-up process can reduce lost admissions." },
+    { title:"Is the institution’s value easy to understand beyond fees and facilities?",impact:"Clear positioning can build trust before the first counselling call." },
+    { title:"Can current students and parents receive more consistent communication?",impact:"Better communication can improve experience, retention, and referrals." },
+  ],
+  "real-estate": [
+    { title:"Are property inquiries being followed up before interest goes cold?",impact:"Shared lead ownership can reduce leakage across portals, calls, and WhatsApp." },
+    { title:"Can serious buyers be identified earlier?",impact:"Better qualification helps sales teams focus on higher-intent opportunities." },
+    { title:"Can site visits and post-visit follow-up become more consistent?",impact:"A clear buyer journey can improve conversion and sales visibility." },
+  ],
+  consultants: [
+    { title:"Does growth depend too heavily on referrals and the founder’s network?",impact:"A clearer authority position can create demand beyond personal relationships." },
+    { title:"Are proposals and promising conversations followed up consistently?",impact:"A simple sales rhythm can prevent valuable opportunities from going quiet." },
+    { title:"Can expertise be packaged into a clearer, repeatable offer?",impact:"A defined offer can make the business easier to understand, buy, and scale." },
+  ],
+  retail: [
+    { title:"Are customers returning after their first purchase?",impact:"Simple retention communication can increase repeat business." },
+    { title:"Can customer conversations across store, WhatsApp, and online channels be connected?",impact:"A shared customer view can improve service and follow-up." },
+    { title:"Are promotions focused on the right customers and available stock?",impact:"Better visibility can reduce wasted offers and improve sales planning." },
+  ],
+  startup: [
+    { title:"Is the team clear about which customer problem is gaining real traction?",impact:"Clearer market learning can reduce scattered effort." },
+    { title:"Are sales conversations producing shared learning for the whole team?",impact:"A simple feedback rhythm can improve product and positioning decisions." },
+    { title:"Can the founder see the few numbers that truly guide the next decision?",impact:"Focused reporting can improve speed without adding dashboard clutter." },
+  ],
+};
+
 const navItems = [
-  { id: "dashboard", label: "Transformation Overview", icon: LayoutDashboard },
-  { id: "audit", label: "Business Diagnostic", icon: FileSearch },
-  { id: "roadmap", label: "Transformation Plan", icon: Target },
-  { id: "automation", label: "Business Systems", icon: Workflow },
+  { id: "dashboard", label: "Business Overview", icon: LayoutDashboard },
+  { id: "audit", label: "Current State", icon: FileSearch },
+  { id: "roadmap", label: "Growth Blueprint", icon: Target },
+  { id: "automation", label: "Recommended Systems", icon: Workflow },
   { id: "future", label: "Future Vision", icon: Rocket },
   { id: "clients", label: "Transformation Proposal", icon: BriefcaseBusiness },
-  { id: "ai", label: "Growth Advisor", icon: Bot },
 ] as const;
 
 type ViewId = (typeof navItems)[number]["id"];
 
-const executiveScores = [
-  { label: "Business Health", question: "Is the business ready to grow?", value: 78, change: "+4 this month", icon: Gauge, color: "violet" },
-  { label: "Visibility", question: "Can the right customers find us?", value: 72, change: "+8 this month", icon: Globe2, color: "cyan" },
-  { label: "Brand", question: "Do customers trust and remember us?", value: 86, change: "+3 this month", icon: Sparkles, color: "green" },
-  { label: "Automation", question: "How efficiently does the business run?", value: 64, change: "+12 this month", icon: Workflow, color: "amber" },
+const executiveSignals = [
+  { label: "Business Foundation", status: "Needs stronger structure before scaling", question: "Is the business set up to grow with confidence?", icon: Gauge, color: "violet" },
+  { label: "Visibility", status: "Present, but not consistently winning attention", question: "Can the right customers discover and understand the business?", icon: Globe2, color: "cyan" },
+  { label: "Brand Trust", status: "Strong potential, but not fully expressed", question: "Does the market clearly trust what makes this business valuable?", icon: Sparkles, color: "green" },
+  { label: "Automation", status: "Useful quick wins are available", question: "Where is manual effort still slowing growth?", icon: Workflow, color: "amber" },
 ] as const;
 
 const activities = [
@@ -162,13 +198,9 @@ function Sidebar({ active, setActive, mobile, close, onChangeIndustry }: { activ
         {mobile && <Button variant="ghost" size="icon" onClick={close}><X className="size-4" /></Button>}
       </div>
       <div className="px-3 pt-3">
-        <div className="nav-label">Transformation journey</div>
+        <div className="nav-label">Client presentation flow</div>
         <nav className="space-y-1">
-          {navItems.slice(0, 5).map((item) => <NavButton key={item.id} item={item} active={active} setActive={setActive} close={close} />)}
-        </nav>
-        <div className="nav-label mt-7">Guidance</div>
-        <nav className="space-y-1">
-          {navItems.slice(5).map((item) => <NavButton key={item.id} item={item} active={active} setActive={setActive} close={close} />)}
+          {navItems.map((item) => <NavButton key={item.id} item={item} active={active} setActive={setActive} close={close} />)}
         </nav>
         <button onClick={() => { onChangeIndustry(); close?.(); }} className="switch-industry-nav">
           <Settings className="size-[15px]" /><span>Switch Industry</span><ArrowRight className="ml-auto size-3.5" />
@@ -210,11 +242,11 @@ function Header({ active, openMenu }: { active: ViewId; openMenu: () => void }) 
         <Button variant="ghost" size="icon" className="lg:hidden" onClick={openMenu}><Menu className="size-5" /></Button>
         <div className="hidden text-xs text-white/35 sm:block">Overwrite OS <span className="mx-2 text-white/15">/</span> <span className="text-white/75">{label}</span></div>
       </div>
-      <button className="command-bar"><Search className="size-3.5" /><span>Search system...</span><kbd><Command className="size-2.5" /> K</kbd></button>
-      <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="relative size-9 text-white/45 hover:text-white"><Bell className="size-4" /><span className="absolute right-2 top-2 size-1.5 rounded-full bg-violet-400 ring-2 ring-[#0b0b12]" /></Button>
-        <Button variant="ghost" size="icon" className="size-9 text-white/45 hover:text-white"><Settings className="size-4" /></Button>
-        <Button className="ml-2 hidden h-8 rounded-lg bg-white px-3 text-[11px] text-black hover:bg-white/85 sm:flex"><Plus className="size-3.5" /> New project</Button>
+      <button className="command-bar presentation-mode"><Search className="size-3.5" /><span>Presentation flow</span></button>
+      <div className="flex items-center gap-2">
+        <Badge variant="outline" className="border-violet-400/20 bg-violet-400/5 px-3 py-1 text-[10px] text-violet-200">
+          Client Demo
+        </Badge>
       </div>
     </header>
   );
@@ -268,68 +300,109 @@ function IndustryOnboarding({ onSelect }: { onSelect: (industry: IndustryId) => 
 
 function Dashboard({ industry, onChangeIndustry }: { industry: IndustryProfile; onChangeIndustry: () => void }) {
   const adaptedActivities = activities.map((item, index) => ({ ...item, title: industry.activity[index] ?? item.title }));
+  const presentationSummary = [
+    { label: "A likely current situation", value: "Strong capability, with opportunities to make growth more consistent." },
+    { label: "What may be slowing growth", value: industry.challenge },
+    { label: "What we could explore first", value: industry.recommendations[0]?.title ?? "Build a clear business system" },
+  ];
+
   return (
     <>
-      <PageTitle eyebrow="Transformation overview" title="Your business is becoming stronger." description="See where you are today, what is slowing growth, and what to do next." action="View transformation report" />
+      <PageTitle eyebrow="Transformation overview" title="A clearer growth story for the business." description="Show the client where the business stands, what is holding growth back, and what the transformation should achieve." action="View transformation report" />
       <GlassCard className="executive-summary">
         <div>
           <div className="flex flex-wrap items-center gap-2"><Badge className="bg-emerald-400/10 text-emerald-300">{industry.label}</Badge><span className="text-[9px] text-white/30">Updated today</span></div>
           <h2>{industry.opportunity}</h2>
-          <p><strong className="font-medium text-white/60">Primary growth constraint:</strong> {industry.challenge}</p>
+          <p>This business already has real value. The next step is removing the few constraints that make growth slower, harder, and less predictable than it should be.</p>
         </div>
-        <div className="health-score"><strong>78</strong><span>Business Health</span><small>+4 this month</small><button onClick={onChangeIndustry} className="change-industry"><Settings className="size-3"/>Switch Industry</button></div>
+        <div className="health-score"><strong>Foundation</strong><span>Current growth stage</span><small>Clear opportunity to become more visible and scalable</small><button onClick={onChangeIndustry} className="change-industry"><Settings className="size-3"/>Switch Industry</button></div>
       </GlassCard>
 
-      <div className="score-grid">
-        {executiveScores.map((score) => { const Icon = score.icon; return (
+      <div className="presentation-summary-grid">
+        {presentationSummary.map((item) => (
+          <GlassCard className="presentation-summary-card" key={item.label}>
+            <span>{item.label}</span>
+            <p>{item.value}</p>
+          </GlassCard>
+        ))}
+      </div>
+
+      <div className="score-grid client-score-grid">
+        {executiveSignals.map((score) => { const Icon = score.icon; return (
           <section className="executive-score" key={score.label}>
-            <div className="flex items-start justify-between"><div className={cn("stat-icon", `tone-${score.color}`)}><Icon className="size-4" /></div><span className="score-change">{score.change}</span></div>
-            <div className="score-value">{score.value}<span>/100</span></div>
-            <h3>{score.label} Score</h3><p>{score.question}</p>
-            <Progress value={score.value} className="mt-4 h-1 bg-white/5 [&>div]:bg-violet-400" />
+            <div className="flex items-start justify-between"><div className={cn("stat-icon", `tone-${score.color}`)}><Icon className="size-4" /></div></div>
+            <div className="signal-label">{score.label}</div>
+            <h3>{score.status}</h3><p>{score.question}</p>
           </section>
         )})}
       </div>
 
       <div className="executive-grid">
-        <GlassCard className="recommendations-panel"><CardHead title="Recommended transformation actions" subtitle="Prioritized by business outcome" icon={TrendingUp} action="View all" />
+        <GlassCard className="recommendations-panel"><CardHead title="What we would likely recommend first" subtitle="Directionally right priorities before a full discovery session" icon={TrendingUp} />
           <div className="recommendation-list">
             {industry.recommendations.map((recommendation, index) =>
               <button className="recommendation-row" key={recommendation.title}><span className="recommendation-number">0{index + 1}</span><span className="min-w-0 flex-1"><strong>{recommendation.title}</strong><small>{recommendation.detail}</small></span><Badge variant="outline" className="border-white/10 text-[8px] text-white/40">{recommendation.tag}</Badge><ChevronRight className="size-3.5 text-white/20"/></button>)}
           </div>
         </GlassCard>
-        <GlassCard><CardHead title="Growth roadmap" subtitle="Current quarter progress" icon={Target} action="Open roadmap" />
-          <div className="roadmap-summary"><div className="roadmap-percent"><strong>64%</strong><span>complete</span></div><div className="flex-1"><div className="mb-2 flex justify-between text-[10px]"><span>Foundation phase</span><span className="text-white/35">4 of 6 complete</span></div><Progress value={64} className="h-1.5 bg-white/5 [&>div]:bg-violet-400"/></div></div>
-          <div className="milestone-list">{industry.workflows.map((name,index)=><div key={name}><span><CheckCircle2 className="size-3.5"/>{name}</span><small>{["In progress","Ready to start","Next phase"][index]}</small></div>)}</div>
+        <GlassCard><CardHead title="How we would explain the journey" subtitle="Keep the conversation simple and strategic" icon={Target} />
+          <div className="presentation-flow">
+            <div>
+              <small>Step 1</small>
+              <strong>Clarify what is slowing growth</strong>
+              <p>Make the current business situation visible in simple business language.</p>
+            </div>
+            <div>
+              <small>Step 2</small>
+              <strong>Build the right systems first</strong>
+              <p>Fix the foundation before adding visibility, lead generation, and automation layers.</p>
+            </div>
+            <div>
+              <small>Step 3</small>
+              <strong>Create a scalable operating model</strong>
+              <p>Turn follow-up, reporting, and execution into a more reliable business rhythm.</p>
+            </div>
+          </div>
         </GlassCard>
       </div>
-      <GlassCard className="mt-4"><CardHead title="Recent activity" subtitle="Important changes across the business" icon={Activity} action="View history" /><div className="recent-activity">{adaptedActivities.map((item) => { const Icon = item.icon; return <div className="activity-row" key={item.title}><div className={cn("activity-icon",`tone-${item.color}`)}><Icon className="size-3.5" /></div><div><p>{item.title}</p><span>{item.meta}</span></div></div> })}</div></GlassCard>
+      <GlassCard className="mt-4"><CardHead title="What this transformation should deliver" subtitle="The outcomes a client should expect to understand and believe" icon={Activity} /><div className="recent-activity client-outcome-grid">{adaptedActivities.map((item) => { const Icon = item.icon; return <div className="activity-row client-outcome-row" key={item.title}><div className={cn("activity-icon",`tone-${item.color}`)}><Icon className="size-3.5" /></div><div><p>{item.title}</p><span>{["Better visibility into operations","More reliable follow-up and ownership","Stronger internal consistency","A clearer growth direction"][adaptedActivities.indexOf(item)]}</span></div></div> })}</div></GlassCard>
     </> 
   );
 }
 
 function Audit({ industry }: { industry: IndustryProfile }) {
   const template = transformationTemplates[industry.id];
+  const discoveryQuestions = indianBusinessQuestions[industry.id];
   const categories = [
-    { name:"Brand Positioning", status:"Clear but not consistently communicated", tone:"positive", icon:Sparkles, strength:"Customers understand the quality and value you provide.", weakness:"Your strongest message changes across channels.", improvement:"Create one clear promise and use it everywhere customers meet the business." },
-    { name:"Digital Presence", status:"Visible, with significant room to grow", tone:"opportunity", icon:Globe2, strength:"Your current digital presence builds trust when people find it.", weakness:"Too few ideal customers discover the business consistently.", improvement:"Build a regular visibility rhythm around useful, authority-led content." },
-    { name:"Lead Generation", status:"Inconsistent and dependent on manual effort", tone:"attention", icon:TrendingUp, strength:"Referrals and warm relationships generate valuable interest.", weakness:"New inquiries are not captured, followed up, or prioritized consistently.", improvement:"Create one reliable lead journey from first interest to qualified conversation." },
-    { name:"Operations", status:"Working, but reliant on people remembering tasks", tone:"opportunity", icon:BriefcaseBusiness, strength:"The team understands how to deliver good work.", weakness:"Important processes live in conversations instead of clear systems.", improvement:"Document the repeatable steps behind delivery, handoffs, and reporting." },
-    { name:"Automation", status:"Early stage with quick wins available", tone:"attention", icon:Workflow, strength:"The business is ready to adopt simpler automated processes.", weakness:"Repetitive follow-up and coordination still consume valuable time.", improvement:"Start with lead response, reminders, and weekly reporting." },
-    { name:"Customer Experience", status:"Trusted, but not consistently designed", tone:"positive", icon:Users, strength:"Customers value the personal attention and quality they receive.", weakness:"The experience can vary depending on who handles the customer.", improvement:"Define a consistent journey from onboarding through follow-up." },
+    { name:"Market Trust", status:"How clearly the market understands and trusts the business", tone:"positive", icon:Sparkles, strength:"Customers already value the quality and relationships the business provides.", weakness:"The strongest business value may not be communicated consistently beyond existing relationships.", improvement:"Clarify one strong reason customers should choose and remember the business." },
+    { name:"New Customer Reach", status:"How the business reaches buyers beyond referrals", tone:"opportunity", icon:Globe2, strength:"Referrals and existing relationships continue to create valuable opportunities.", weakness:"New customer discovery may still depend heavily on word-of-mouth, local networks, and offline activity.", improvement:"Build a practical visibility rhythm for the places ideal customers already use." },
+    { name:"Inquiry Follow-up", status:"How calls, WhatsApp inquiries, and proposals are managed", tone:"attention", icon:TrendingUp, strength:"The team understands customers and knows how to handle valuable conversations.", weakness:"Inquiries and follow-ups may be spread across WhatsApp, calls, Excel, and individual memory.", improvement:"Create one simple shared view of every inquiry, owner, and next action." },
+    { name:"Team Execution", status:"How reliably work moves without constant owner involvement", tone:"opportunity", icon:BriefcaseBusiness, strength:"Experienced people know how to deliver good work.", weakness:"Important decisions, approvals, and handoffs may wait for the owner or a few key people.", improvement:"Make responsibilities, handoffs, and weekly priorities visible to the team." },
+    { name:"Routine Work", status:"Where manual work consumes avoidable time", tone:"attention", icon:Workflow, strength:"The business already uses familiar tools and can adopt improvements gradually.", weakness:"Repeated reminders, reporting, quotation follow-up, and coordination may consume valuable time.", improvement:"Automate only the most repetitive and high-impact work first." },
+    { name:"Customer Continuity", status:"How the business encourages repeat business and referrals", tone:"positive", icon:Users, strength:"Personal relationships create trust and customer loyalty.", weakness:"Follow-up after delivery, purchase, or service may not happen consistently.", improvement:"Create a simple post-sale rhythm that supports retention, referrals, and collections." },
   ];
-  return <><PageTitle eyebrow="Understand where you are today" title="Current State Assessment" description={`A clear view of how your ${industry.label.toLowerCase()} business operates and where growth is being held back.`} action="Refresh assessment" />
+  return <><PageTitle eyebrow="A guided business conversation" title="Where could growth become easier?" description={`Use these discussion areas to understand the ${industry.label.toLowerCase()} business before recommending any solution.`} />
+    <div className="discussion-flow">
+      <div><span>01</span><strong>Understand</strong><p>Listen to how the business works today.</p></div>
+      <div><span>02</span><strong>Identify</strong><p>Find where time, leads, or money are being lost.</p></div>
+      <div><span>03</span><strong>Prioritize</strong><p>Choose one high-impact place to begin.</p></div>
+      <div><span>04</span><strong>Plan</strong><p>Agree on a practical first improvement.</p></div>
+    </div>
     <GlassCard className="assessment-summary">
-      <div><Badge className="bg-violet-400/10 text-violet-300">Current stage</Badge><h2>Your business is currently operating at <span>Foundation Stage.</span></h2><p>{template?.currentState ?? "You have a credible business with strong customer value. The next stage requires more consistent visibility, lead management, and repeatable operating systems."}</p></div>
-      <div className="assessment-priorities"><div><small>Biggest Constraint</small><strong>{template?.constraint ?? "Lead Management"}</strong><span>The primary issue currently limiting predictable growth.</span></div><div><small>Future State</small><strong>{industry.label} Transformation</strong><span>{template?.futureState ?? industry.opportunity}</span></div></div>
+      <div><Badge className="bg-violet-400/10 text-violet-300">Starting perspective</Badge><h2>You already have a capable business. <span>Our role is to help growth become easier.</span></h2><p>{template?.currentState ?? "The business has strong customer value. The opportunity is to make visibility, lead management, and daily execution more consistent."}</p></div>
+      <div className="assessment-priorities"><div><small>A useful question to explore</small><strong>Where is valuable time or opportunity being lost?</strong><span>We listen first, then identify the highest-impact place to begin.</span></div><div><small>A possible first opportunity</small><strong>{template?.opportunities[0]?.title ?? "Digital Visibility"}</strong><span>{template?.opportunities[0]?.impact ?? industry.opportunity}</span></div></div>
     </GlassCard>
-    {template && <GlassCard className="opportunities-panel"><CardHead title="Business Opportunities" subtitle={`Highest-potential opportunities for ${industry.label}`} icon={TrendingUp}/><div className="opportunity-list">{template.opportunities.map((opportunity,index)=><div key={opportunity.title}><span>0{index+1}</span><div><strong>{opportunity.title}</strong><p>{opportunity.impact}</p></div></div>)}</div></GlassCard>}
-    <div className="assessment-grid">{categories.map((category)=>{const Icon=category.icon;return <GlassCard className="assessment-card" key={category.name}>
-      <div className="assessment-card-head"><div className={cn("stat-icon",category.tone==="positive"?"tone-green":category.tone==="attention"?"tone-amber":"tone-violet")}><Icon className="size-4"/></div><div><h3>{category.name}</h3><Badge variant="outline" className={cn("mt-2 border-white/10 text-[8px]",category.tone==="positive"?"text-emerald-300":category.tone==="attention"?"text-amber-300":"text-violet-300")}>{category.status}</Badge></div></div>
-      <div className="assessment-detail"><small>Strength</small><p>{category.strength}</p></div>
-      <div className="assessment-detail"><small>What is slowing growth</small><p>{category.weakness}</p></div>
-      <div className="assessment-detail improvement"><small>Improvement area</small><p>{category.improvement}</p></div>
+    <div className="section-intro"><p className="eyebrow">Discovery questions</p><h2>Start with the questions that matter most.</h2><span>These are conversation starters based on common Indian mid-sized business patterns, not conclusions about the client.</span></div>
+    <GlassCard className="opportunities-panel simple-opportunities"><div className="opportunity-list">{discoveryQuestions.map((question,index)=><div key={question.title}><span>0{index+1}</span><div><strong>{question.title}</strong><p>{question.impact}</p></div></div>)}</div></GlassCard>
+    <div className="section-intro"><p className="eyebrow">Discussion areas</p><h2>Explore the business through six practical areas.</h2><span>Use only the areas relevant to the client conversation. There is no need to explain every section.</span></div>
+    <div className="assessment-story-list">{categories.map((category,index)=>{const Icon=category.icon;return <GlassCard className="assessment-story" key={category.name}>
+      <div className="assessment-story-title"><span>{String(index+1).padStart(2,"0")}</span><div className={cn("stat-icon",category.tone==="positive"?"tone-green":category.tone==="attention"?"tone-amber":"tone-violet")}><Icon className="size-4"/></div><div><h3>{category.name}</h3><p>{category.status}</p></div></div>
+      <div className="assessment-story-content">
+        <div><small>Question for the client</small><p>Does this feel familiar? {category.weakness}</p></div>
+        <div className="assessment-story-change"><small>Opportunity we could explore</small><strong>{category.improvement}</strong></div>
+        <div className="assessment-story-gain"><small>Why it may matter</small><p>{category.strength}</p></div>
+      </div>
     </GlassCard>})}</div>
+    <GlassCard className="discussion-next"><div><p className="eyebrow">Recommended next step</p><h3>Choose one business constraint for a focused discovery session.</h3><span>After understanding the real process and data, we can recommend a practical first improvement with clear outcomes.</span></div><Button className="accent-button">Begin discovery <ArrowRight className="size-3.5"/></Button></GlassCard>
   </>;
 }
 
@@ -345,17 +418,24 @@ function Roadmap({ industry }: { industry: IndustryProfile }) {
   ];
   const template = transformationTemplates[industry.id];
   const stages = template ? template.blueprint.map((stage,index)=>({title:stage.stage,status:index===0?"Today":index===1?"In progress":index===2?"Next":"Planned",situation:stage.situation,outcome:stage.outcome,systems:stage.systems,impact:stage.impact})) : fallbackStages;
-  return <><PageTitle eyebrow="See the transformation journey" title={`${industry.label} Growth Blueprint`} description="A strategic path from where your business is today to becoming organized, automated, and scale ready." action="Refresh blueprint" />
-    <GlassCard className="blueprint-overview"><div><Badge className="bg-violet-400/10 text-violet-300">Transformation journey</Badge><h2>Build the business in the right order.</h2><p>Each stage removes a constraint and creates the foundation required for the next stage of growth.</p></div><div className="blueprint-progress"><strong>2 of 7</strong><span>stages active</span><Progress value={28} className="mt-3 h-1.5 bg-white/5 [&>div]:bg-violet-400"/></div></GlassCard>
+  return <><PageTitle eyebrow="See the transformation journey" title={`${industry.label} Growth Blueprint`} description="A simple conversation showing what could change and what the business could gain." />
+    <GlassCard className="blueprint-overview"><div><Badge className="bg-violet-400/10 text-violet-300">Suggested journey</Badge><h2>Improve the business in the right order.</h2><p>This is a starting direction. The exact priorities are confirmed after understanding the client’s real business situation.</p></div></GlassCard>
     <div className="blueprint-roadmap">{stages.map((stage,index)=><article className={cn("blueprint-stage",index===1&&"blueprint-stage-active")} key={stage.title}>
       <div className="blueprint-marker"><span>{String(index+1).padStart(2,"0")}</span></div>
       <GlassCard className="blueprint-card">
-        <div className="blueprint-card-title"><div><p>Stage {String(index+1).padStart(2,"0")}</p><h3>{stage.title}</h3></div><Badge className={cn("text-[8px]",index===0?"bg-emerald-400/10 text-emerald-300":index===1?"bg-violet-400/10 text-violet-300":"bg-white/5 text-white/35")}>{stage.status}</Badge></div>
-        <div className="blueprint-details">
-          <div><small>Current Situation</small><p>{stage.situation}</p></div>
-          <div><small>Desired Outcome</small><p>{stage.outcome}</p></div>
-          <div><small>Systems Required</small><ul>{stage.systems.map(system=><li key={system}><CheckCircle2 className="size-3"/>{system}</li>)}</ul></div>
-          <div className="blueprint-impact"><small>Expected Impact</small><p>{stage.impact}</p></div>
+        <div className="blueprint-card-title"><div><p>Step {String(index+1).padStart(2,"0")}</p><h3>{stage.title}</h3></div></div>
+        <div className="blueprint-story">
+          <div className="blueprint-story-main">
+            <small>What is happening now</small>
+            <p>{stage.situation}</p>
+            <span><ArrowRight className="size-3.5"/> What changes</span>
+            <strong>{stage.outcome}</strong>
+          </div>
+          <div className="blueprint-story-result">
+            <small>What the business gains</small>
+            <p>{stage.impact}</p>
+            <div>{stage.systems.map(system=><span key={system}><CheckCircle2 className="size-3"/>{system}</span>)}</div>
+          </div>
         </div>
       </GlassCard>
     </article>)}</div>
@@ -374,70 +454,99 @@ function Automation({ industry }: { industry: IndustryProfile }) {
   const template = transformationTemplates[industry.id];
   const icons = [Sparkles,Globe2,TrendingUp,Users,Workflow,Gauge];
   const systems = template ? template.systems.map((system,index)=>({...system,icon:icons[index]??Workflow,stage:["Foundation","Visibility","Lead Generation","Operations","Automation","Scale Ready"][index]??"Growth"})) : defaultSystems;
-  return <><PageTitle eyebrow="Build what growth requires" title={`${industry.label} Recommended Systems`} description="The business systems required to become professional, visible, organized, automated, and scale ready." action="Review system priorities" />
-    <GlassCard className="systems-summary"><div><Badge className="bg-violet-400/10 text-violet-300">6 recommended systems</Badge><h2>Systems create the business outcomes.</h2><p>Build these systems in sequence to remove growth constraints without adding unnecessary complexity.</p></div><div className="systems-summary-meta"><div><small>Start here</small><strong>Brand Foundation</strong></div><div><small>Highest impact</small><strong>Lead Capture</strong></div></div></GlassCard>
+  const firstPriority = systems[0];
+  const FirstIcon = firstPriority.icon;
+  const remainingPriorities = systems.slice(1);
+  return <><PageTitle eyebrow="Recommended direction" title={`What should ${industry.label} improve first?`} description="A focused recommendation based on the likely business constraint. The exact starting point is confirmed after discovery." />
+    <GlassCard className="priority-hero">
+      <div className="priority-hero-main"><Badge className="bg-violet-400/10 text-violet-300">Suggested first priority</Badge><div className="priority-title"><div className="stat-icon tone-violet"><FirstIcon className="size-4"/></div><div><p>{firstPriority.stage}</p><h2>{firstPriority.name}</h2></div></div><p>{firstPriority.problem}</p></div>
+      <div className="priority-result"><small>What this could improve</small><strong>{firstPriority.impact}</strong><div>{firstPriority.benefits.map(benefit=><span key={benefit}><CheckCircle2 className="size-3"/>{benefit}</span>)}</div></div>
+    </GlassCard>
+    <div className="section-intro"><p className="eyebrow">Why start here</p><h2>One improvement should prove value before adding more.</h2><span>For an Indian mid-sized business, adoption is easier when the first change solves a visible daily problem and works with the team’s existing habits.</span></div>
+    <div className="priority-reasons"><GlassCard><span>01</span><strong>Easy to understand</strong><p>The owner and team can clearly see the business problem being solved.</p></GlassCard><GlassCard><span>02</span><strong>Useful in daily work</strong><p>The improvement supports real calls, WhatsApp conversations, follow-ups, or reporting.</p></GlassCard><GlassCard><span>03</span><strong>Creates visible progress</strong><p>The business can see the result before investing in the next system.</p></GlassCard></div>
+    <div className="section-intro"><p className="eyebrow">What could come next</p><h2>Build the remaining improvements only when needed.</h2><span>These are possible next priorities, not a package the client must buy together.</span></div>
+    <div className="next-priority-list">{remainingPriorities.map((system,index)=>{const Icon=system.icon;return <GlassCard className="next-priority" key={system.name}>
+      <div className="next-priority-head"><span>Next {String(index+1).padStart(2,"0")}</span><div className="stat-icon tone-violet"><Icon className="size-4"/></div><div><small>{system.stage}</small><h3>{system.name}</h3></div></div>
+      <p>{system.problem}</p><strong>{system.impact}</strong>
+    </GlassCard>})}</div>
+    <GlassCard className="discussion-next"><div><p className="eyebrow">Before implementation</p><h3>Confirm the priority through a focused discovery session.</h3><span>We review the current process, team habits, tools, and available data before finalizing the recommendation.</span></div><Button className="accent-button">Discuss first priority <ArrowRight className="size-3.5"/></Button></GlassCard>
+  </>;
+  /*
+  return <><PageTitle eyebrow="What needs to be put in place" title={`${industry.label} Recommended Systems`} description="A simple view of the practical improvements that can make the business easier to find, manage, and grow." action="Review priorities" />
+    <GlassCard className="systems-summary"><div><Badge className="bg-violet-400/10 text-violet-300">Recommended improvements</Badge><h2>Build only what the business needs next.</h2><p>Start with the biggest growth constraint, prove the improvement, and then move to the next priority.</p></div><div className="systems-summary-meta"><div><small>Start with</small><strong>The biggest constraint</strong></div><div><small>Then build</small><strong>The next opportunity</strong></div></div></GlassCard>
     <div className="systems-grid">{systems.map((system,index)=>{const Icon=system.icon;return <GlassCard className="recommended-system" key={system.name}>
       <div className="system-card-title"><div className="flex items-start gap-11"><div className="stat-icon tone-violet"><Icon className="size-4"/></div><div><p>System {String(index+1).padStart(2,"0")} · {system.stage}</p><h3>{system.name}</h3></div></div><Badge variant="outline" className="border-white/10 text-[8px] text-white/40">{system.complexity}</Badge></div>
-      <div className="system-outcome"><small>Problem Solved</small><p>{system.problem}</p></div>
-      <div className="system-outcome impact"><small>Business Impact</small><p>{system.impact}</p></div>
-      <div className="system-benefits"><small>Expected Benefits</small><div>{system.benefits.map(benefit=><span key={benefit}><CheckCircle2 className="size-3"/>{benefit}</span>)}</div></div>
-      <div className="system-footer"><div><small>Implementation Complexity</small><strong>{system.complexity}</strong></div><div><small>Expected Timeline</small><strong>{system.timeline}</strong></div><button>Explore system <ArrowRight className="size-3"/></button></div>
+      <div className="system-outcome"><small>Why this matters</small><p>{system.problem}</p></div>
+      <div className="system-outcome impact"><small>What changes for the business</small><p>{system.impact}</p></div>
+      <div className="system-benefits"><small>What the client gains</small><div>{system.benefits.map(benefit=><span key={benefit}><CheckCircle2 className="size-3"/>{benefit}</span>)}</div></div>
     </GlassCard>})}</div>
   </>;
+  */
 }
 
 function Clients({ industry }: { industry: IndustryProfile }) {
   const template = transformationTemplates[industry.id];
-  const opportunities = template?.opportunities ?? industry.recommendations.map(item=>({title:item.title,impact:item.detail}));
   const systems = template?.systems ?? industry.recommendations.map(item=>({name:item.title,problem:item.detail,impact:item.detail,benefits:[item.tag],complexity:"Focused",timeline:"3–5 weeks"}));
-  return <><PageTitle eyebrow="Client-facing transformation brief" title={`${industry.label} Transformation Proposal`} description="A clear summary of the current business, transformation priorities, expected outcomes, investment paths, and recommended next step." action="Present proposal" />
-    <GlassCard className="proposal-hero"><div><Badge className="bg-violet-400/10 text-violet-300">Strategic recommendation</Badge><h2>Build a more visible, organized, and scalable {industry.label.toLowerCase()} business.</h2><p>{template?.futureState ?? industry.opportunity}</p></div><div className="proposal-status"><small>Recommended starting point</small><strong>{systems[0]?.name ?? "Business Foundation System"}</strong><span>Begin with the highest-impact constraint first.</span></div></GlassCard>
-    <div className="proposal-grid"><GlassCard><CardHead title="Current business understanding" subtitle="What we understand today" icon={FileSearch}/><div className="proposal-copy"><p>{template?.currentState ?? industry.challenge}</p><div><small>Biggest growth constraint</small><strong>{template?.constraint ?? industry.challenge}</strong></div></div></GlassCard><GlassCard><CardHead title="Highest business opportunities" subtitle="Where transformation can create value" icon={TrendingUp}/><div className="proposal-list">{opportunities.slice(0,3).map((item,index)=><div key={item.title}><span>0{index+1}</span><div><strong>{item.title}</strong><p>{item.impact}</p></div></div>)}</div></GlassCard></div>
-    <GlassCard className="mt-4"><CardHead title="Recommended transformation systems" subtitle="Build in sequence, based on business priority" icon={Workflow}/><div className="proposal-systems">{systems.slice(0,4).map((system,index)=><div key={system.name}><span>Phase {index+1}</span><strong>{system.name}</strong><p>{system.impact}</p><small>{system.timeline} · {system.complexity} complexity</small></div>)}</div></GlassCard>
+  const firstSystem = systems[0];
+  const questions = indianBusinessQuestions[industry.id].slice(0,3);
+  return <><PageTitle eyebrow="Decision summary" title={`A practical next step for ${industry.label}`} description="A simple conversation summary. Final recommendations come only after understanding the business properly." />
+    <GlassCard className="proposal-hero"><div><Badge className="bg-violet-400/10 text-violet-300">Starting perspective</Badge><h2>Improve one important part of the business first.</h2><p>{template?.currentState ?? industry.challenge}</p></div><div className="proposal-status"><small>Suggested first area</small><strong>{firstSystem?.name ?? "Business Foundation System"}</strong><span>This is a discussion starting point, not a fixed recommendation.</span></div></GlassCard>
+    <div className="proposal-grid"><GlassCard><CardHead title="What we should confirm" subtitle="Questions to answer before recommending anything" icon={FileSearch}/><div className="proposal-list">{questions.map((item,index)=><div key={item.title}><span>0{index+1}</span><div><strong>{item.title}</strong><p>{item.impact}</p></div></div>)}</div></GlassCard><GlassCard><CardHead title="What the client receives" subtitle="Clarity before commitment" icon={Target}/><div className="proposal-outcomes">{["A clear view of the current process","The highest-impact constraint identified","One practical first improvement","Expected business outcomes","A phased scope and investment estimate"].map(item=><span key={item}><CheckCircle2 className="size-3.5"/>{item}</span>)}</div></GlassCard></div>
+    <GlassCard className="proposal-focus"><div><p className="eyebrow">Possible first improvement</p><h3>{firstSystem?.name ?? "Business Foundation System"}</h3><p>{firstSystem?.impact ?? industry.opportunity}</p></div><div><small>What this could improve</small><div className="proposal-focus-gains">{(firstSystem?.benefits ?? ["Clearer ownership","Fewer missed opportunities","Better follow-up"]).map(item=><span key={item}><CheckCircle2 className="size-3.5"/>{item}</span>)}</div></div></GlassCard>
+    <div className="proposal-grid mt-4"><GlassCard><CardHead title="How we begin" subtitle="A low-risk first conversation" icon={Workflow}/><div className="proposal-timeline">{[["Listen","Understand how work happens today"],["Confirm","Agree on the most important constraint"],["Plan","Define one useful improvement"],["Decide","Proceed only when the value is clear"]].map(([phase,detail],index)=><div key={phase}><span>{index+1}</span><div><strong>{phase}</strong><p>{detail}</p></div></div>)}</div></GlassCard><GlassCard><CardHead title="What we will not do" subtitle="A practical, responsible approach" icon={ShieldCheck}/><div className="proposal-outcomes">{["Recommend tools before understanding the process","Force a large transformation package","Disrupt working business routines unnecessarily","Promise unsupported returns or timelines"].map(item=><span key={item}><CheckCircle2 className="size-3.5"/>{item}</span>)}</div></GlassCard></div>
+    <GlassCard className="proposal-next"><div><p className="eyebrow">Recommended next step</p><h3>Begin with a focused business discovery session.</h3><span>We will understand the current process, identify the strongest opportunity, and agree on one practical place to begin.</span></div><Button className="accent-button">Start discovery <ArrowRight className="size-3.5"/></Button></GlassCard>
+  </>;
+  /*
+  return <><PageTitle eyebrow="The conversation summary" title={`${industry.label} Transformation Proposal`} description="A simple summary of where the business is today, what should change first, and what the client can gain." action="Present proposal" />
+    <GlassCard className="proposal-hero"><div><Badge className="bg-violet-400/10 text-violet-300">Recommended direction</Badge><h2>Build a more visible, organized, and scalable {industry.label.toLowerCase()} business.</h2><p>{template?.futureState ?? industry.opportunity}</p></div><div className="proposal-status"><small>Where we begin</small><strong>{systems[0]?.name ?? "Business Foundation System"}</strong><span>Start with one important problem, then build from there.</span></div></GlassCard>
+    <div className="proposal-grid"><GlassCard><CardHead title="A possible current situation" subtitle="A starting perspective before detailed discovery" icon={FileSearch}/><div className="proposal-copy"><p>{template?.currentState ?? industry.challenge}</p><div><small>Likely growth constraint</small><strong>{template?.constraint ?? industry.challenge}</strong></div></div></GlassCard><GlassCard><CardHead title="Where opportunity may exist" subtitle="Areas worth exploring with the client" icon={TrendingUp}/><div className="proposal-list">{opportunities.slice(0,3).map((item,index)=><div key={item.title}><span>0{index+1}</span><div><strong>{item.title}</strong><p>{item.impact}</p></div></div>)}</div></GlassCard></div>
+    <GlassCard className="mt-4"><CardHead title="What we recommend doing" subtitle="A phased journey based on business priority" icon={Workflow}/><div className="proposal-systems">{systems.slice(0,4).map((system,index)=><div key={system.name}><span>Step {index+1}</span><strong>{system.name}</strong><p>{system.impact}</p></div>)}</div></GlassCard>
     <div className="proposal-grid mt-4"><GlassCard><CardHead title="Expected business outcomes" subtitle="How progress should be measured" icon={Target}/><div className="proposal-outcomes">{["Stronger visibility among ideal customers","More consistent lead capture and follow-up","Faster, more reliable execution","Improved customer experience","Less owner dependency","Greater readiness to scale"].map(item=><span key={item}><CheckCircle2 className="size-3.5"/>{item}</span>)}</div></GlassCard><GlassCard><CardHead title="Transformation timeline" subtitle="A phased, manageable journey" icon={CalendarDays}/><div className="proposal-timeline">{[["Assessment","Understand the current state"],["Foundation","Fix the highest-impact constraint"],["Implementation","Introduce priority systems"],["Optimization","Improve performance and adoption"],["Scale","Expand proven systems"]].map(([phase,detail],index)=><div key={phase}><span>{index+1}</span><div><strong>{phase}</strong><p>{detail}</p></div></div>)}</div></GlassCard></div>
     <GlassCard className="mt-4"><CardHead title="Investment options" subtitle="Begin at the level that fits the business" icon={CircleDollarSign}/><div className="investment-options">{[["Focused Start","₹20k–50k","Solve one immediate bottleneck."],["Transformation Foundation","₹50k–2L","Build the foundation and connected growth systems."],["Growth Transformation","₹2L+","Implement a multi-stage transformation journey."],["Enterprise","Custom","Design systems for complex teams and scale."]].map(([name,value,detail],index)=><div className={cn(index===1&&"recommended-investment")} key={name}>{index===1&&<Badge className="bg-violet-400/10 text-violet-300">Recommended</Badge>}<strong>{name}</strong><b>{value}</b><p>{detail}</p></div>)}</div></GlassCard>
     <GlassCard className="proposal-next"><div><p className="eyebrow">Recommended next step</p><h3>Begin with a discovery session and current-state assessment.</h3><span>This confirms the business priorities before any systems are recommended or implemented.</span></div><Button className="accent-button">Start assessment <ArrowRight className="size-3.5"/></Button></GlassCard>
   </>;
+  */
 }
 
 function FutureVision({ industry }: { industry: IndustryProfile }) {
   const template = transformationTemplates[industry.id];
   const futureState = template?.futureState ?? `A visible, organized, automated, and scalable ${industry.label.toLowerCase()} business.`;
   const moments = [
-    { time:"Today", title:"A capable business with untapped potential", icon:Activity, description:template?.currentState ?? industry.challenge, focus:"Understand the current reality", outcomes:["Strengths and constraints are visible","Growth priorities become clear","The future direction is defined"] },
-    { time:"90 Days", title:"The foundation starts working for you", icon:Target, description:"Core positioning, visibility, and lead systems create a more professional and organized business.", focus:"Systems improve efficiency", outcomes:["Clearer market positioning","Faster, more consistent follow-up","Repeatable operating rhythms"] },
-    { time:"1 Year", title:"Growth becomes organized and intelligent", icon:Workflow, description:"Automation improves execution while leadership gains a clearer view of performance and opportunities.", focus:"Automation and intelligence improve execution", outcomes:["Routine work happens reliably","Decisions use clear business signals","Growth is less dependent on manual effort"] },
-    { time:"3 Years", title:"The business is built to scale", icon:Rocket, description:futureState, focus:"Scalability improves growth", outcomes:["Predictable growth systems","Stronger leadership capacity","Freedom to expand without losing quality"] },
+    { time:"Today", title:"Understand what is making growth harder", icon:Activity, description:template?.currentState ?? industry.challenge, focus:"Listen before changing", outcomes:["See how work happens today","Identify repeated delays and missed opportunities","Agree on the most important priority"] },
+    { time:"First improvement", title:"Make one important process work better", icon:Target, description:"Start with a practical improvement the team can understand, use, and experience in daily work.", focus:"Prove practical value", outcomes:["Less confusion in one key process","More consistent follow-up and ownership","A visible result the team can trust"] },
+    { time:"After it works", title:"Build on improvements that prove useful", icon:Rocket, description:futureState, focus:"Grow with greater control", outcomes:["Expand what is already working","Reduce avoidable owner dependency","Create capacity for the next stage of growth"] },
   ];
-  return <><PageTitle eyebrow="Visualize what becomes possible" title={`${industry.label} Future Vision`} description="See how the business can transform when the right systems, automation, and intelligence work together." action="Refine future vision" />
-    <GlassCard className="vision-hero"><div><Badge className="bg-violet-400/10 text-violet-300">Your future business</Badge><h2>{futureState}</h2><p>This is not growth through more effort. It is growth through a stronger business operating model.</p></div><div className="vision-orb"><Rocket className="size-6"/><span>3 year<br/>vision</span></div></GlassCard>
+  return <><PageTitle eyebrow="A realistic future direction" title={`What could become easier for ${industry.label}?`} description="A practical vision built through gradual improvement, team adoption, and visible business value." />
+    <GlassCard className="vision-hero"><div><Badge className="bg-violet-400/10 text-violet-300">Possible future state</Badge><h2>{futureState}</h2><p>This is a direction to explore with the client, not a promise or fixed timeline.</p></div><div className="vision-orb"><Rocket className="size-6"/><span>Future<br/>direction</span></div></GlassCard>
     <div className="vision-timeline">{moments.map((moment,index)=>{const Icon=moment.icon;return <article className={cn("vision-moment",index===0&&"vision-moment-current")} key={moment.time}>
       <div className="vision-time"><span>{moment.time}</span></div>
       <GlassCard className="vision-card"><div className="vision-card-head"><div className="stat-icon tone-violet"><Icon className="size-4"/></div><div><p>{moment.focus}</p><h3>{moment.title}</h3></div></div><p className="vision-description">{moment.description}</p><div className="vision-outcomes">{moment.outcomes.map(outcome=><span key={outcome}><CheckCircle2 className="size-3"/>{outcome}</span>)}</div></GlassCard>
     </article>})}</div>
-    <GlassCard className="vision-confidence"><Sparkles className="size-5"/><div><h3>The future business is built one system at a time.</h3><p>Every improvement creates capacity for the next stage. The result is a business that grows with greater confidence, control, and freedom.</p></div><Button className="accent-button">Continue transformation <ArrowRight className="size-3.5"/></Button></GlassCard>
+    <GlassCard className="vision-confidence"><Sparkles className="size-5"/><div><h3>Build progress the team can sustain.</h3><p>Start small, prove the value, and expand only when the improvement is useful to the business.</p></div></GlassCard>
   </>;
-}
-
-function AskAI() {
-  const [prompt,setPrompt]=useState("");
-  return <div className="ai-page"><PageTitle eyebrow="Your strategic growth partner" title="Growth Advisor" description="Get clear guidance on growth constraints, opportunities, systems, and next decisions."/><div className="ai-chat"><div className="ai-welcome"><div className="ai-orb"><Sparkles className="size-6"/></div><h2>What should we solve today?</h2><p>I can help you understand where you are, reveal opportunities, and plan the business you want to become.</p><div className="suggestion-grid">{[["Find my biggest growth opportunity",TrendingUp],["Build a 90-day transformation plan",CalendarDays],["Identify what is slowing growth",FileSearch],["Design the systems we need",Workflow]].map(([x,I])=><button key={String(x)} onClick={()=>setPrompt(String(x))}><I className="size-4 text-violet-300"/><span>{String(x)}</span><ArrowRight className="ml-auto size-3 text-white/20"/></button>)}</div></div><div className="chat-input"><Input value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Ask about your business transformation..." className="h-12 border-0 bg-transparent text-xs shadow-none focus-visible:ring-0"/><Button size="icon" className="mr-1 size-9 shrink-0 rounded-lg bg-violet-500 hover:bg-violet-400"><Send className="size-3.5"/></Button></div><p className="mt-2 text-center text-[8px] text-white/20">Overwrite AI can make mistakes. Verify important decisions.</p></div></div>;
 }
 
 export function OverwriteOS() {
   const [active,setActive]=useState<ViewId>("dashboard");
   const [menu,setMenu]=useState(false);
-  const [industryId,setIndustryId]=useState<IndustryId | null>(() => {
-    if (typeof window === "undefined") return null;
-    return window.localStorage.getItem("overwrite-industry") as IndustryId | null;
-  });
+  const [industryId,setIndustryId]=useState<IndustryId | null>(null);
+  const [ready,setReady]=useState(false);
   const industry = industryProfiles.find((profile) => profile.id === industryId);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setIndustryId(window.localStorage.getItem("overwrite-industry") as IndustryId | null);
+      setReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   function selectIndustry(selection: IndustryId) {
     window.localStorage.setItem("overwrite-industry", selection);
     setIndustryId(selection);
   }
 
+  if (!ready) return <main className="industry-onboarding"><div className="onboarding-glow" /><div className="grid-bg" /></main>;
   if (!industry) return <IndustryOnboarding onSelect={selectIndustry} />;
 
   return (
@@ -445,7 +554,7 @@ export function OverwriteOS() {
       <div className="ambient a1"/><div className="ambient a2"/><div className="grid-bg"/>
       <div className="hidden lg:flex"><Sidebar active={active} setActive={setActive} onChangeIndustry={()=>{window.localStorage.removeItem("overwrite-industry");setIndustryId(null)}}/></div>
       {menu && <div className="mobile-overlay"><button className="absolute inset-0 bg-black/60" onClick={()=>setMenu(false)}/><Sidebar mobile active={active} setActive={setActive} close={()=>setMenu(false)} onChangeIndustry={()=>{window.localStorage.removeItem("overwrite-industry");setIndustryId(null)}}/></div>}
-      <div className="main-shell"><Header active={active} openMenu={()=>setMenu(true)}/><main className="content">{active==="dashboard"&&<Dashboard industry={industry} onChangeIndustry={()=>{window.localStorage.removeItem("overwrite-industry");setIndustryId(null)}}/>} {active==="audit"&&<Audit industry={industry}/>} {active==="roadmap"&&<Roadmap industry={industry}/>} {active==="automation"&&<Automation industry={industry}/>} {active==="future"&&<FutureVision industry={industry}/>} {active==="clients"&&<Clients industry={industry}/>} {active==="ai"&&<AskAI/>}</main></div>
+      <div className="main-shell"><Header active={active} openMenu={()=>setMenu(true)}/><main className="content">{active==="dashboard"&&<Dashboard industry={industry} onChangeIndustry={()=>{window.localStorage.removeItem("overwrite-industry");setIndustryId(null)}}/>} {active==="audit"&&<Audit industry={industry}/>} {active==="roadmap"&&<Roadmap industry={industry}/>} {active==="automation"&&<Automation industry={industry}/>} {active==="future"&&<FutureVision industry={industry}/>} {active==="clients"&&<Clients industry={industry}/>}</main></div>
     </div>
   );
 }
